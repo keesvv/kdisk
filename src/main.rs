@@ -1,4 +1,4 @@
-use sysinfo::{SystemExt, DiskExt, Disk, RefreshKind};
+use sysinfo::{Disk, DiskExt, DiskType, RefreshKind, SystemExt};
 use partition_identity::{PartitionID, PartitionSource};
 use pretty_bytes::converter;
 
@@ -76,7 +76,10 @@ fn main() {
     let disks = system.get_disks_mut();
     disks.sort_by(|a, b| b.get_total_space().cmp(&a.get_total_space()));
 
-    let fmt_disks: Vec<String> = disks.iter().map(format_disk).collect();
+    let fmt_disks: Vec<String> = disks.iter()
+        .filter(|p| p.get_type() != DiskType::Unknown(-1))
+        .map(format_disk)
+        .collect();
 
     for disk in fmt_disks {
         println!("{}", disk);
