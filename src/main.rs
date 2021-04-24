@@ -40,13 +40,14 @@ impl Bar {
 }
 
 fn main() {
-    let system = sysinfo::System::new_with_specifics(
+    let mut system = sysinfo::System::new_with_specifics(
         RefreshKind::new()
             .with_disks()
             .with_disks_list()
     );
 
-    let disks = system.get_disks();
+    let disks = system.get_disks_mut();
+    disks.sort_by(|a, b| b.get_total_space().cmp(&a.get_total_space()));
 
     for d in disks {
         if d.get_type() == DiskType::Unknown(-1) {
