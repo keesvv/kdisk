@@ -67,13 +67,15 @@ fn format_disk(d: &Disk) -> String {
 }
 
 fn main() {
-    let system = sysinfo::System::new_with_specifics(
+    let mut system = sysinfo::System::new_with_specifics(
         RefreshKind::new()
             .with_disks()
             .with_disks_list()
     );
 
-    let disks = system.get_disks();
+    let disks = system.get_disks_mut();
+    disks.sort_by(|a, b| b.get_total_space().cmp(&a.get_total_space()));
+
     let fmt_disks: Vec<String> = disks.iter().map(format_disk).collect();
 
     for disk in fmt_disks {
