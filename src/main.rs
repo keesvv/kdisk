@@ -1,4 +1,4 @@
-use sysinfo::{SystemExt, DiskExt, DiskType, RefreshKind};
+use sysinfo::{SystemExt, DiskExt, Disk, RefreshKind};
 use partition_identity::{PartitionID, PartitionSource};
 use pretty_bytes::converter;
 
@@ -39,6 +39,33 @@ impl Bar {
     }
 }
 
+fn format_disk(d: &Disk) -> String {
+    let bar = Bar::new(
+        d.get_total_space() - d.get_available_space(),
+        d.get_total_space()
+    );
+
+    let label = match PartitionID::get_source(
+        PartitionSource::Label,
+        d.get_name().to_str().unwrap()
+    ) {
+        Some(l) => l.to_string().replace("LABEL=", ""),
+        None => String::from(
+            d.get_mount_point().to_str().unwrap_or(
+                d.get_name().to_str().unwrap()
+            )
+        )
+    };
+
+    format!(
+        "{0} \x1b[1m{1: <3}%\x1b[0m {2: >10} \x1b[37m{3}",
+        bar.format_str(),
+        bar.get_progress_percent(),
+        converter::convert(d.get_available_space() as f64),
+        label
+    )
+}
+
 fn main() {
     let system = sysinfo::System::new_with_specifics(
         RefreshKind::new()
@@ -47,35 +74,9 @@ fn main() {
     );
 
     let disks = system.get_disks();
+    let fmt_disks: Vec<String> = disks.iter().map(format_disk).collect();
 
-    for d in disks {
-        if d.get_type() == DiskType::Unknown(-1) {
-            continue;
-        }
-
-        let bar = Bar::new(
-            d.get_total_space() - d.get_available_space(),
-            d.get_total_space()
-        );
-
-        let label = match PartitionID::get_source(
-            PartitionSource::Label,
-            d.get_name().to_str().unwrap()
-        ) {
-            Some(l) => l.to_string().replace("LABEL=", ""),
-            None => String::from(
-                d.get_mount_point().to_str().unwrap_or(
-                    d.get_name().to_str().unwrap()
-                )
-            )
-        };
-
-        println!(
-            "{0} \x1b[1m{1: <3}%\x1b[0m {2: >10} \x1b[37m{3}",
-            bar.format_str(),
-            bar.get_progress_percent(),
-            converter::convert(d.get_available_space() as f64),
-            label
-        );
+    for disk in fmt_disks {
+        println!("{}", disk);
     }
 }
