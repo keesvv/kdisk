@@ -6,12 +6,12 @@ A tiny utility for displaying disk usage, written in Rust.
 ## Installing
 
 ### From source
-    ```bash
-    git clone https://github.com/keesvv/kdisk
-    cd kdisk
-    cargo build --release
-    sudo cp ./target/release/kdisk /usr/local/bin
-    ```
+```bash
+git clone https://github.com/keesvv/kdisk
+cd kdisk
+cargo build --release
+sudo cp ./target/release/kdisk /usr/local/bin
+```
 
 ## Todo
 - [x] Display filesystem labels
