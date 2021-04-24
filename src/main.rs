@@ -1,5 +1,6 @@
 use sysinfo::{SystemExt, DiskExt, DiskType, RefreshKind};
 use partition_identity::{PartitionID, PartitionSource};
+use pretty_bytes::converter;
 
 struct Bar {
     value: u64,
@@ -62,14 +63,19 @@ fn main() {
             d.get_name().to_str().unwrap()
         ) {
             Some(l) => l.to_string().replace("LABEL=", ""),
-            None => String::from(d.get_name().to_str().unwrap())
+            None => String::from(
+                d.get_mount_point().to_str().unwrap_or(
+                    d.get_name().to_str().unwrap()
+                )
+            )
         };
 
         println!(
-            "\x1b[37m{0: <10}\t{1} \x1b[1m{2}%\x1b[0m",
-            label,
+            "{0} \x1b[1m{1: <3}%\x1b[0m {2: >10} \x1b[37m{3}",
             bar.format_str(),
-            bar.get_progress_percent()
+            bar.get_progress_percent(),
+            converter::convert(d.get_available_space() as f64),
+            label
         );
     }
 }
