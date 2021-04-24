@@ -1,4 +1,5 @@
 use sysinfo::{SystemExt, DiskExt, DiskType, RefreshKind};
+use partition_identity::{PartitionID, PartitionSource};
 
 struct Bar {
     value: u64,
@@ -56,9 +57,17 @@ fn main() {
             d.get_total_space()
         );
 
+        let label = match PartitionID::get_source(
+            PartitionSource::Label,
+            d.get_name().to_str().unwrap()
+        ) {
+            Some(l) => l.to_string().replace("LABEL=", ""),
+            None => String::from(d.get_name().to_str().unwrap())
+        };
+
         println!(
-            "\x1b[37m{}\t{} \x1b[1m{}%\x1b[0m",
-            d.get_name().to_str().unwrap(),
+            "\x1b[37m{0: <10}\t{1} \x1b[1m{2}%\x1b[0m",
+            label,
             bar.format_str(),
             bar.get_progress_percent()
         );
